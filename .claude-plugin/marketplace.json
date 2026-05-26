@@ -1,0 +1,12 @@
+{
+  "name": "ckp-marketplace",
+  "owner": {
+    "name": "malarcon"
+  },
+  "plugins": [
+    {
+      "name": "ckp",
+      "source": "."
+    }
+  ]
+}
