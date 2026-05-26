@@ -19,7 +19,7 @@ LINEAR_API="https://api.linear.app/graphql"
 
 ## Operaciones (recetas a verificar)
 
-### `resolve_issue({{ISSUE_PREFIX}}-NNN)`
+### `resolve_issue(${user_config.issue_prefix}-NNN)`
 
 Linear identifica issues por slug `<TEAM>-<N>` (mismo formato).
 
@@ -27,7 +27,7 @@ Linear identifica issues por slug `<TEAM>-<N>` (mismo formato).
 curl -s -X POST "$LINEAR_API" \
   -H "Authorization: $LINEAR_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"query":"query { issue(id: \"{{ISSUE_PREFIX}}-NNN\") { identifier title state { name } url } }"}' \
+  -d '{"query":"query { issue(id: \"${user_config.issue_prefix}-NNN\") { identifier title state { name } url } }"}' \
   | jq '.data.issue'
 ```
 
@@ -37,7 +37,7 @@ curl -s -X POST "$LINEAR_API" \
 ### `build_url(id)`
 
 ```
-{{ISSUE_TRACKER_URL}}/issue/{{ISSUE_PREFIX}}-NNN
+${user_config.issue_tracker_url}/issue/${user_config.issue_prefix}-NNN
 ```
 
 Linear suele ser `https://linear.app/<workspace>/issue/<id>`.
@@ -45,7 +45,7 @@ Linear suele ser `https://linear.app/<workspace>/issue/<id>`.
 ### `validate_id(id)`
 
 ```bash
-[[ "$id" =~ ^{{ISSUE_PREFIX}}-[0-9]+$ ]]
+[[ "$id" =~ ^${user_config.issue_prefix}-[0-9]+$ ]]
 ```
 
 ## TODO al adoptar

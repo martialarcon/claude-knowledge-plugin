@@ -22,16 +22,10 @@ description: |
   - Preguntas generales no relacionadas con el proyecto
 
 tools: [Read, Bash, Grep, Glob, LS]
-activation_rules: "../../skill-rules.json"
-hooks:
-  pre: "../../hooks/pre-activate.sh"
-  post: "../../hooks/post-activate.sh"
-  on_success: "../../hooks/on-success.sh"
 ---
 
 <!--
-  Hooks reales: ver `.claude/settings.json` (PreToolUse matcher Skill, UserPromptSubmit).
-  Activación por patterns: ver `.claude/skill-rules.json`.
+  Hooks reales: ver `hooks/hooks.json` (PreToolUse/PostToolUse matcher Skill, UserPromptSubmit, SessionEnd).
   Contexto específico del proyecto: ver `references/domain.md`.
 -->
 
@@ -68,11 +62,11 @@ index/keywords.json → Routing por keywords
 
 → Detalle: [references/principles.md](references/principles.md)
 
-## Issue tracker (obligatorio en `/{{PROJECT_SLUG}} analyze | handoff | impact`)
+## Issue tracker (obligatorio en `/ckp analyze | handoff | impact`)
 
-- Formato: `{{ISSUE_PREFIX}}-NNN` (regex `^{{ISSUE_PREFIX}}-\d+$`).
-- Base URL: `{{ISSUE_TRACKER_URL}}`
-- Tracker activo: `{{ISSUE_TRACKER}}` — ver [`../planner/references/trackers/{{ISSUE_TRACKER}}.md`](../planner/references/trackers/{{ISSUE_TRACKER}}.md)
+- Formato: `${user_config.issue_prefix}-NNN` (regex `^${user_config.issue_prefix}-\d+$`).
+- Base URL: `${user_config.issue_tracker_url}`
+- Tracker activo: `${user_config.issue_tracker}` — ver [`../planner/references/trackers/${user_config.issue_tracker}.md`](../planner/references/trackers/${user_config.issue_tracker}.md)
 - Resolver el título vía API. **Nunca inventar.** Si falla, pedirlo al usuario.
 - El KA **rechaza** generar handoff o registrar análisis sin un ticket válido.
 
@@ -82,41 +76,41 @@ index/keywords.json → Routing por keywords
 
 | Comando | Descripción |
 |---------|-------------|
-| `/{{PROJECT_SLUG}} analyze [petición]` | Viabilidad de feature/cambio. Exige `{{ISSUE_PREFIX}}-NNN`. |
-| `/{{PROJECT_SLUG}} query [pregunta]` | Consulta rápida al KB. No requiere ticket. |
-| `/{{PROJECT_SLUG}} trace [elemento]` | Rastrea uso de una entidad/config. |
-| `/{{PROJECT_SLUG}} impact [cambio]` | Evalúa qué se rompe. |
-| `/{{PROJECT_SLUG}} diagnose [síntoma]` | Debugging en 6 fases: loop → repro → hipótesis → instrument → fix → cleanup. |
-| `/{{PROJECT_SLUG}} grill [petición]` | Entrevista 1-pregunta-a-la-vez antes de cerrar análisis/handoff. |
-| `/{{PROJECT_SLUG}} zoom-out [área]` | Mapa alto-nivel (≤30 líneas): módulos, callers, issues, ADRs. |
+| `/ckp analyze [petición]` | Viabilidad de feature/cambio. Exige `${user_config.issue_prefix}-NNN`. |
+| `/ckp query [pregunta]` | Consulta rápida al KB. No requiere ticket. |
+| `/ckp trace [elemento]` | Rastrea uso de una entidad/config. |
+| `/ckp impact [cambio]` | Evalúa qué se rompe. |
+| `/ckp diagnose [síntoma]` | Debugging en 6 fases: loop → repro → hipótesis → instrument → fix → cleanup. |
+| `/ckp grill [petición]` | Entrevista 1-pregunta-a-la-vez antes de cerrar análisis/handoff. |
+| `/ckp zoom-out [área]` | Mapa alto-nivel (≤30 líneas): módulos, callers, issues, ADRs. |
 
 ### Definiciones funcionales (L7)
 
 | Comando | Descripción |
 |---------|-------------|
-| `/{{PROJECT_SLUG}} funcdef [tema]` | Consulta una regla en L7. |
-| `/{{PROJECT_SLUG}} funcdef check [plan_id]` | Verifica que un plan no contradice L7. |
-| `/{{PROJECT_SLUG}} funcdef propose [tema]` | Propone crear/actualizar definición. Requiere confirmación. |
+| `/ckp funcdef [tema]` | Consulta una regla en L7. |
+| `/ckp funcdef check [plan_id]` | Verifica que un plan no contradice L7. |
+| `/ckp funcdef propose [tema]` | Propone crear/actualizar definición. Requiere confirmación. |
 
 ### Captura y mantenimiento
 
 | Comando | Descripción |
 |---------|-------------|
-| `/{{PROJECT_SLUG}} capture` | Captura hallazgos de sesión a KB (aprobación granular). Idempotente. |
-| `/{{PROJECT_SLUG}} update` | Sync KB con commits nuevos. |
-| `/{{PROJECT_SLUG}} status` | Estado del KB. |
-| `/{{PROJECT_SLUG}} inconsistencies` | Lista issues abiertos. |
-| `/{{PROJECT_SLUG}} diagram [tipo] [elemento]` | Genera diagrama Mermaid. |
+| `/ckp capture` | Captura hallazgos de sesión a KB (aprobación granular). Idempotente. |
+| `/ckp update` | Sync KB con commits nuevos. |
+| `/ckp status` | Estado del KB. |
+| `/ckp inconsistencies` | Lista issues abiertos. |
+| `/ckp diagram [tipo] [elemento]` | Genera diagrama Mermaid. |
 
-Tras `/{{PROJECT_SLUG}} capture` aprobado, invocar: `bash .claude/hooks/on-success.sh capture`.
+Tras `/ckp capture` aprobado, invocar: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/on-success.sh" capture`.
 
 ### Entornos y branches
 
 | Comando | Descripción |
 |---------|-------------|
-| `/{{PROJECT_SLUG}} env [módulo?]` | Matriz de entornos. |
-| `/{{PROJECT_SLUG}} branches [entorno]` | Branches desplegadas por módulo. |
-| `/{{PROJECT_SLUG}} branches diff [env1] [env2]` | Diff entre entornos. |
+| `/ckp env [módulo?]` | Matriz de entornos. |
+| `/ckp branches [entorno]` | Branches desplegadas por módulo. |
+| `/ckp branches diff [env1] [env2]` | Diff entre entornos. |
 
 **Fuente de verdad:** `L0-system/environments.yaml`.
 
@@ -124,13 +118,13 @@ Tras `/{{PROJECT_SLUG}} capture` aprobado, invocar: `bash .claude/hooks/on-succe
 
 | Comando | Descripción |
 |---------|-------------|
-| `/{{PROJECT_SLUG}} handoff [id] "[desc]"` | Genera `handoff/{id}.yaml` (~500 tokens). |
-| `/{{PROJECT_SLUG}} handoff-add [id] "[info]"` | Añade info a handoff existente. |
-| `/{{PROJECT_SLUG}} handoff-list` | Handoffs pendientes. |
+| `/ckp handoff [id] "[desc]"` | Genera `handoff/{id}.yaml` (~500 tokens). |
+| `/ckp handoff-add [id] "[info]"` | Añade info a handoff existente. |
+| `/ckp handoff-list` | Handoffs pendientes. |
 
 ```
 SESIÓN 1 (KA)                              SESIÓN 2 (Planner)
-/{{PROJECT_SLUG}} analyze + /{{PROJECT_SLUG}} handoff   →    /planner [id]
+/ckp analyze + /ckp handoff   →    /ckp:planner [id]
               ▼                                             ▼
    handoff/{id}.yaml                              plans/{id}.md
 ```
@@ -150,7 +144,7 @@ Cada respuesta abre con `KB consultado: <ruta §sección>` (o `ninguna` + propue
 | [domain.md](references/domain.md) | **Contexto específico del proyecto** (entornos, módulos, invariantes, top issues). Editar al adoptar. |
 | [principles.md](references/principles.md) | Principios operativos. |
 | [handoff-format.md](references/handoff-format.md) | Formato YAML del handoff. |
-| [`../planner/references/trackers/{{ISSUE_TRACKER}}.md`](../planner/references/trackers/{{ISSUE_TRACKER}}.md) | Issue tracker activo (credenciales, recetas). |
+| [`../planner/references/trackers/${user_config.issue_tracker}.md`](../planner/references/trackers/${user_config.issue_tracker}.md) | Issue tracker activo (credenciales, recetas). |
 | [`../RESOLVER.md`](../RESOLVER.md) | Dispatcher: cuándo activar KA vs Planner. |
 
 <!-- trust-boundary:start -->
@@ -159,8 +153,8 @@ Cada respuesta abre con `KB consultado: <ruta §sección>` (o `ninguna` + propue
 Esta skill **NO implementa código**. Si el usuario pide "y ahora hazlo", "implémentalo", "aplica el plan", "arregla el bug":
 
 1. **No editar archivos del repo objetivo.** Solo se permite escribir dentro del KB (`analysis/`, `handoff/`, `L*/`, `index/`).
-2. Responder: *"Mi rol es analizar y generar handoff. Para implementar, abre Claude Code en el repo objetivo o pasa el handoff al Planner (`/planner {id}`) y luego a Developer."*
-3. Si lo que falta es el plan, derivar a `/planner {id}` (en otra sesión, idealmente).
+2. Responder: *"Mi rol es analizar y generar handoff. Para implementar, abre Claude Code en el repo objetivo o pasa el handoff al Planner (`/ckp:planner {id}`) y luego a Developer."*
+3. Si lo que falta es el plan, derivar a `/ckp:planner {id}` (en otra sesión, idealmente).
 
 Razón: el contrato del plugin separa análisis ↔ planificación ↔ implementación para mantener handoffs auditables. Mezclar implementación rompe la cadena de revisión.
 <!-- trust-boundary:end -->

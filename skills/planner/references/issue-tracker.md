@@ -4,10 +4,10 @@ El Planner depende de un tracker externo para validar tickets y resolver título
 
 ## Tracker activo
 
-- **Nombre**: `{{ISSUE_TRACKER}}`
-- **Implementación**: [`trackers/{{ISSUE_TRACKER}}.md`](trackers/{{ISSUE_TRACKER}}.md)
-- **Base URL**: `{{ISSUE_TRACKER_URL}}`
-- **Prefijo de ID**: `{{ISSUE_PREFIX}}-NNN`
+- **Nombre**: `${user_config.issue_tracker}`
+- **Implementación**: [`trackers/${user_config.issue_tracker}.md`](trackers/${user_config.issue_tracker}.md)
+- **Base URL**: `${user_config.issue_tracker_url}`
+- **Prefijo de ID**: `${user_config.issue_prefix}-NNN`
 
 ## Contrato (operaciones que el Planner usa)
 
@@ -15,17 +15,17 @@ Cualquier implementación válida debe exponer estas operaciones — vía CLI, c
 
 ### `resolve_issue(id) → { id, title, status, url }`
 
-Dado `{{ISSUE_PREFIX}}-NNN`, devuelve el ticket. Falla si no existe.
+Dado `${user_config.issue_prefix}-NNN`, devuelve el ticket. Falla si no existe.
 
 **Uso en el Planner:** cuando el handoff trae `issue.title: null` o el usuario aporta solo el ID, el Planner llama a esta operación. Nunca inventa el título.
 
 ### `build_url(id) → string`
 
-Devuelve la URL canónica del ticket (ej. `{{ISSUE_TRACKER_URL}}/browse/{{ISSUE_PREFIX}}-NNN`).
+Devuelve la URL canónica del ticket (ej. `${user_config.issue_tracker_url}/browse/${user_config.issue_prefix}-NNN`).
 
 ### `validate_id(id) → bool`
 
-Verifica que `id` cumple el regex `^{{ISSUE_PREFIX}}-\d+$`.
+Verifica que `id` cumple el regex `^${user_config.issue_prefix}-\d+$`.
 
 ## Configuración
 
@@ -42,4 +42,4 @@ Cada implementación documenta:
 - 🟡 [Linear](trackers/linear.md) — stub. Contrato declarado, recetas no verificadas.
 - 🟡 [GitHub Issues](trackers/github.md) — stub. Contrato declarado, recetas no verificadas.
 
-Para activar otro tracker, re-ejecuta `init.sh` con `--tracker linear|github` o sustituye manualmente el placeholder `{{ISSUE_TRACKER}}` en `.claude/skills/`.
+Para cambiar de tracker, reconfigura el plugin (`/plugin` → seleccionar `ckp` → editar `issue_tracker`) con valor `jira | linear | github`.

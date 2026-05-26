@@ -1,36 +1,50 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# Hook: pre-activate.sh
-# Se ejecuta antes de activar la skill Knowledge Agent o Planner.
-# - Hace pull --ff-only de los repos listados en .claude/repos.list (throttle).
+# Hook: pre-activate.sh  (plugin: ckp)
+# Se ejecuta antes de activar la skill knowledge-agent o planner.
+# - Hace pull --ff-only de los repos listados en
+#   ${CLAUDE_PROJECT_DIR}/.claude/ckp-repos.list (throttle).
 # - Inyecta estado del KB y warnings de entornos como systemMessage.
 #
 # Overrides:
-#   KA_FORCE_PULL=1                 fuerza el pull aunque no haya expirado el TTL.
-#   KA_PULL_TTL_MIN=N               cambia la ventana del throttle (default 30 min).
-#   {{REPOS_ROOT_ENV}}=/path        raíz donde buscar los repos compañeros.
+#   CKP_FORCE_PULL=1     fuerza el pull aunque no haya expirado el TTL.
+#   CKP_PULL_TTL_MIN=N   cambia la ventana del throttle (default 30 min).
+#   CKP_REPOS_ROOT=/path raíz donde buscar los repos compañeros
+#                        (default: directorio padre del KB).
+#
+# Rutas:
+#   KB_ROOT   = ${CLAUDE_PROJECT_DIR}/${CLAUDE_PLUGIN_OPTION_KB_PATH}
+#               (si KB_PATH vacío → KB_ROOT = CLAUDE_PROJECT_DIR)
+#   DATA_DIR  = ${CLAUDE_PLUGIN_DATA}  (estado mutable del plugin)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -euo pipefail
 trap 'exit 0' ERR
 
-# ─── CONFIG ───
-if [[ -n "${CLAUDE_PROJECT_DIR:-}" ]]; then
-    KB_ROOT="$CLAUDE_PROJECT_DIR"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+KB_SUB="${CLAUDE_PLUGIN_OPTION_KB_PATH:-}"
+if [[ -n "$KB_SUB" ]]; then
+    case "$KB_SUB" in
+        /*) KB_ROOT="$KB_SUB" ;;
+         *) KB_ROOT="$PROJECT_DIR/$KB_SUB" ;;
+    esac
 else
-    KB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+    KB_ROOT="$PROJECT_DIR"
 fi
 
-REPOS_ROOT="${{{REPOS_ROOT_ENV}}:-$(dirname "$KB_ROOT")}"
-REPOS_LIST="$KB_ROOT/.claude/repos.list"
-PULL_STAMP="$KB_ROOT/.claude/.last-pull"
-PULL_TTL_MIN="${KA_PULL_TTL_MIN:-30}"
+DATA_DIR="${CLAUDE_PLUGIN_DATA:-$PROJECT_DIR/.claude}"
+mkdir -p "$DATA_DIR"
+
+REPOS_ROOT="${CKP_REPOS_ROOT:-$(dirname "$KB_ROOT")}"
+REPOS_LIST="$PROJECT_DIR/.claude/ckp-repos.list"
+PULL_STAMP="$DATA_DIR/.last-pull"
+PULL_TTL_MIN="${CKP_PULL_TTL_MIN:-30}"
 
 SUMMARY=""
 add() { SUMMARY+="$*"$'\n'; }
 
 check_kb_state() {
-    [[ -d "$KB_ROOT/L0-system" ]] && add "KB_EXISTS=true" || add "KB_EXISTS=false"
+    [[ -d "$KB_ROOT/L0-system" ]] && add "KB_EXISTS=true" || add "KB_EXISTS=false (sugerencia: /ckp:setup)"
 }
 
 inject_environment_context() {
@@ -46,7 +60,7 @@ inject_environment_context() {
 }
 
 should_pull() {
-    [[ "${KA_FORCE_PULL:-0}" = "1" ]] && return 0
+    [[ "${CKP_FORCE_PULL:-0}" = "1" ]] && return 0
     [[ ! -f "$PULL_STAMP" ]] && return 0
     local now last age
     now=$(date +%s)
@@ -81,7 +95,7 @@ pull_repos() {
     if ! should_pull; then
         local last_human
         last_human=$(date -d "@$(cat "$PULL_STAMP")" '+%H:%M' 2>/dev/null || echo "?")
-        add "📥 Pull omitido (último a las $last_human, TTL ${PULL_TTL_MIN}min). Forzar: KA_FORCE_PULL=1"
+        add "📥 Pull omitido (último a las $last_human, TTL ${PULL_TTL_MIN}min). Forzar: CKP_FORCE_PULL=1"
         return 0
     fi
 
@@ -100,7 +114,6 @@ pull_repos() {
     done < <(resolve_repos)
     add "Total: $ok ok, $skip skip"
 
-    mkdir -p "$(dirname "$PULL_STAMP")"
     date +%s > "$PULL_STAMP"
 }
 

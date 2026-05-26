@@ -1,4 +1,4 @@
-# Contexto del proyecto — {{PROJECT_NAME}}
+# Contexto del proyecto — ckp
 
 <!--
   ARCHIVO A RELLENAR AL ADOPTAR EL PLUGIN.
@@ -32,7 +32,7 @@ Fuente de verdad estructurada: `L0-system/environments.yaml`.
 |--------|-------------------|-------|
 | TODO   | `~/git/TODO`      | TODO  |
 
-Mantener `<KB>/.claude/repos.list` sincronizado para que el pull automático funcione.
+Mantener `${CLAUDE_PROJECT_DIR}/.claude/ckp-repos.list` sincronizado para que el pull automático funcione.
 
 ## Invariantes
 

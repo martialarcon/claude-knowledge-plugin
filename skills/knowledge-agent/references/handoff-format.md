@@ -1,19 +1,19 @@
 # Formato del handoff KA → Planner
 
-Archivo: `handoff/{{{ISSUE_PREFIX}}-NNN}.yaml` (~500 tokens objetivo).
+Archivo: `handoff/{${user_config.issue_prefix}-NNN}.yaml` (~500 tokens objetivo).
 
 ```yaml
-id: {{ISSUE_PREFIX}}-NNN
+id: ${user_config.issue_prefix}-NNN
 status: pending_planning           # pending_planning | planned | implemented
 created: 2026-05-26T10:00:00Z
 created_by: knowledge-agent
 
 issue:
-  tracker: {{ISSUE_TRACKER}}
-  id: {{ISSUE_PREFIX}}-NNN
-  url: {{ISSUE_TRACKER_URL}}/browse/{{ISSUE_PREFIX}}-NNN
+  tracker: ${user_config.issue_tracker}
+  id: ${user_config.issue_prefix}-NNN
+  url: ${user_config.issue_tracker_url}/browse/${user_config.issue_prefix}-NNN
   title: <resuelto vía API, nunca inventado>
-  label: "{{ISSUE_PREFIX}}-NNN <título corto>"
+  label: "${user_config.issue_prefix}-NNN <título corto>"
 
 summary: |
   1-3 frases. Qué se pide, por qué, ámbito.
@@ -22,7 +22,7 @@ scope:
   modules:                          # módulos afectados
     - name: <módulo>
       repo: ~/git/<repo>
-      branch_hint: feature/{{ISSUE_PREFIX}}-NNN-slug
+      branch_hint: feature/${user_config.issue_prefix}-NNN-slug
       files:
         - path: <ruta/archivo.ext>
           why: <para qué mirar aquí>
@@ -50,7 +50,7 @@ warnings:                           # avisos críticos
 
 related:
   issues:
-    - <{{ISSUE_PREFIX}}-XYZ>: <relación>
+    - <${user_config.issue_prefix}-XYZ>: <relación>
   adrs:
     - L6-decisions/<adr>.md
 
@@ -67,8 +67,8 @@ links:
 2. **`current_snippet`** es orientativo: el Planner siempre relee el archivo real en disco antes de proponer diff.
 3. **`functional_definitions`** es obligatorio si el plan toca compliance, ciclo de vida o reglas funcionales — el Planner las cruza contra L7.
 4. **`decisions_open`** vacío = listo para planificar. No vacío = el Planner pregunta antes.
-5. El handoff es **inmutable** una vez `status: planned`. Para añadir info: `/{{PROJECT_SLUG}} handoff-add`.
+5. El handoff es **inmutable** una vez `status: planned`. Para añadir info: `/ckp handoff-add`.
 
 ## Idempotencia
 
-Re-ejecutar `/{{PROJECT_SLUG}} handoff {{ISSUE_PREFIX}}-NNN "…"` con el mismo ID no sobrescribe: pide confirmación y muestra diff.
+Re-ejecutar `/ckp handoff ${user_config.issue_prefix}-NNN "…"` con el mismo ID no sobrescribe: pide confirmación y muestra diff.

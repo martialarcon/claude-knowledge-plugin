@@ -9,7 +9,7 @@ description: |
   detallados con archivos a tocar, diffs y criterios de éxito verificables.
 
   Usar cuando:
-  - Planificar implementación después de `/{{PROJECT_SLUG}} handoff`
+  - Planificar implementación después de `/ckp handoff`
   - Generar plan detallado con archivos y cambios específicos
   - Estimar esfuerzo y riesgos
 
@@ -22,12 +22,12 @@ tools: [Read, Bash, Grep, Glob, LS, WebFetch]
 
 Todo plan generado debe estar asociado a un ticket válido.
 
-- **Tracker activo**: `{{ISSUE_TRACKER}}`
-- **Base URL**: `{{ISSUE_TRACKER_URL}}`
-- **Formato del ID**: `{{ISSUE_PREFIX}}-NNN` (regex `^{{ISSUE_PREFIX}}-\d+$`)
-- **Formato del label**: `{{ISSUE_PREFIX}}-NNN <título corto>`
+- **Tracker activo**: `${user_config.issue_tracker}`
+- **Base URL**: `${user_config.issue_tracker_url}`
+- **Formato del ID**: `${user_config.issue_prefix}-NNN` (regex `^${user_config.issue_prefix}-\d+$`)
+- **Formato del label**: `${user_config.issue_prefix}-NNN <título corto>`
 - **Contrato + recetas**: [references/issue-tracker.md](references/issue-tracker.md)
-- **Implementación activa**: [references/trackers/{{ISSUE_TRACKER}}.md](references/trackers/{{ISSUE_TRACKER}}.md)
+- **Implementación activa**: [references/trackers/${user_config.issue_tracker}.md](references/trackers/${user_config.issue_tracker}.md)
 
 ### Origen del ID y título
 
@@ -35,7 +35,7 @@ Por orden de preferencia:
 
 1. **Vía handoff**: el bloque `issue:` del `handoff/{id}.yaml` aporta `id`, `url`, `title`, `label`. Propagarlo al plan tal cual.
 2. **Usuario aporta solo el ID** o URL: **resolver el título vía API** siguiendo la receta del tracker activo. Nunca inventar.
-3. **Sin nada**: preguntar al usuario por el `{{ISSUE_PREFIX}}-NNN`.
+3. **Sin nada**: preguntar al usuario por el `${user_config.issue_prefix}-NNN`.
 
 Si la API falla o el ticket no existe, avisar al usuario.
 
@@ -44,12 +44,12 @@ Si la API falla o el ticket no existe, avisar al usuario.
 1. **Metadata del plan** (`plans/{id}.md`):
    ```markdown
    ## Metadata
-   - Issue: [{{ISSUE_PREFIX}}-NNN]({{ISSUE_TRACKER_URL}}/browse/{{ISSUE_PREFIX}}-NNN) — <título resuelto>
+   - Issue: [${user_config.issue_prefix}-NNN](${user_config.issue_tracker_url}/browse/${user_config.issue_prefix}-NNN) — <título resuelto>
    - Handoff: handoff/{id}.yaml
    - Fecha: YYYY-MM-DD
    ```
-2. **Sugerencia de branch por módulo**: `feature/{{ISSUE_PREFIX}}-NNN-slug` o `fix/{{ISSUE_PREFIX}}-NNN-slug`.
-3. **Sugerencia de commits / MR**: primer renglón con formato `{{ISSUE_PREFIX}}-NNN <título>`.
+2. **Sugerencia de branch por módulo**: `feature/${user_config.issue_prefix}-NNN-slug` o `fix/${user_config.issue_prefix}-NNN-slug`.
+3. **Sugerencia de commits / MR**: primer renglón con formato `${user_config.issue_prefix}-NNN <título>`.
 4. **Sección `## Trazabilidad`** al final del plan: ID, URL, título, branches sugeridas y formato de commit/MR.
 
 ### Validación
@@ -82,8 +82,8 @@ Trabajar desde `~/`. Paths de repos, KB y planes parten de `~/git/`. Nunca usar 
 │  2. Si existe → Cargar y planificar                         │
 │  3. Si NO existe → Pedir al usuario:                        │
 │     "Ejecuta primero en sesión del Knowledge Agent:         │
-│      /{{PROJECT_SLUG}} analyze '{descripción}'              │
-│      /{{PROJECT_SLUG}} handoff {id}"                        │
+│      /ckp analyze '{descripción}'              │
+│      /ckp handoff {id}"                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -110,7 +110,7 @@ Diff sobre código real
 
 ## Comandos
 
-### `/planner [id]`
+### `/ckp:planner [id]`
 
 Genera plan desde un handoff.
 
@@ -136,12 +136,12 @@ Para planificar [X], necesito:
 - [información específica]
 
 Ejecuta en sesión del Knowledge Agent:
-  /{{PROJECT_SLUG}} handoff-add {id} "[información necesaria]"
+  /ckp handoff-add {id} "[información necesaria]"
 
-Luego vuelve y ejecuta: /planner {id}
+Luego vuelve y ejecuta: /ckp:planner {id}
 ```
 
-### `/planner-status [id]`
+### `/ckp:planner-status [id]`
 
 Muestra estado de un plan.
 
@@ -155,7 +155,7 @@ Muestra estado de un plan.
 # Plan: {id}
 
 ## Metadata
-- Issue: [{{ISSUE_PREFIX}}-NNN]({{ISSUE_TRACKER_URL}}/browse/{{ISSUE_PREFIX}}-NNN) — <título>
+- Issue: [${user_config.issue_prefix}-NNN](${user_config.issue_tracker_url}/browse/${user_config.issue_prefix}-NNN) — <título>
 - Handoff: handoff/{id}.yaml
 - Fecha: YYYY-MM-DD
 - Estimación: X días
@@ -183,7 +183,7 @@ Muestra estado de un plan.
 ## Módulo: {nombre} (Prioridad: N)
 
 **Repo:** {repo}
-**Branch:** feature/{{ISSUE_PREFIX}}-NNN-slug
+**Branch:** feature/${user_config.issue_prefix}-NNN-slug
 **Esfuerzo:** X días
 **Riesgo:** bajo/medio/alto
 
@@ -231,9 +231,9 @@ Muestra estado de un plan.
 [Copiar del handoff]
 
 ## Trazabilidad
-- Issue: [{{ISSUE_PREFIX}}-NNN]({{ISSUE_TRACKER_URL}}/browse/{{ISSUE_PREFIX}}-NNN)
+- Issue: [${user_config.issue_prefix}-NNN](${user_config.issue_tracker_url}/browse/${user_config.issue_prefix}-NNN)
 - Branch sugerida por módulo: …
-- Formato de commit: `{{ISSUE_PREFIX}}-NNN <título>`
+- Formato de commit: `${user_config.issue_prefix}-NNN <título>`
 
 ## Checklist Pre-Implementación
 - [ ] Decisiones resueltas
@@ -271,7 +271,7 @@ Esta skill **NO implementa código**. Si el usuario pide "ya tienes el plan, aho
 
 1. **No editar archivos del repo objetivo.** Solo se permite escribir dentro de `plans/`.
 2. Responder: *"El plan está en `plans/{id}.md`. Para implementarlo, abre Claude Code (rol Developer) en el repo objetivo y pásale el plan como entrada."*
-3. Si el plan tiene Decisiones Pendientes bloqueantes, derivar de vuelta al KA con `/{{PROJECT_SLUG}} handoff-add {id} "..."`.
+3. Si el plan tiene Decisiones Pendientes bloqueantes, derivar de vuelta al KA con `/ckp handoff-add {id} "..."`.
 
 Razón: el contrato del plugin separa análisis ↔ planificación ↔ implementación. Mezclar implementación rompe la auditabilidad del par handoff/plan.
 <!-- trust-boundary:end -->

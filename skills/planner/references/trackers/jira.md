@@ -8,7 +8,7 @@ Cubre el contrato declarado en [`../issue-tracker.md`](../issue-tracker.md).
 - **Email**: derivado de `git config user.email`. Si la cuenta de Claude no coincide con la de Atlassian, mantener un mapeo en el README del proyecto (o exportar `JIRA_EMAIL`).
 
 ```bash
-JIRA_BASE="{{ISSUE_TRACKER_URL}}"
+JIRA_BASE="${user_config.issue_tracker_url}"
 JIRA_EMAIL="${JIRA_EMAIL:-$(git config user.email)}"
 JIRA_TOKEN="$(cat ~/secrets/jira_token.txt)"
 JIRA_AUTH="$JIRA_EMAIL:$JIRA_TOKEN"
@@ -16,17 +16,17 @@ JIRA_AUTH="$JIRA_EMAIL:$JIRA_TOKEN"
 
 ## Operaciones
 
-### `resolve_issue({{ISSUE_PREFIX}}-NNN)`
+### `resolve_issue(${user_config.issue_prefix}-NNN)`
 
 ```bash
 curl -s -u "$JIRA_AUTH" \
-  "$JIRA_BASE/rest/api/3/issue/{{ISSUE_PREFIX}}-NNN?fields=summary,status" \
+  "$JIRA_BASE/rest/api/3/issue/${user_config.issue_prefix}-NNN?fields=summary,status" \
   | jq '{key, summary: .fields.summary, status: .fields.status.name}'
 ```
 
 Salida esperada:
 ```json
-{ "key": "{{ISSUE_PREFIX}}-123", "summary": "…", "status": "In Progress" }
+{ "key": "${user_config.issue_prefix}-123", "summary": "…", "status": "In Progress" }
 ```
 
 **Si devuelve 404**: el ticket no existe → avisar al usuario, NO inventar.
@@ -35,21 +35,21 @@ Salida esperada:
 ### `build_url(id)`
 
 ```
-{{ISSUE_TRACKER_URL}}/browse/{{ISSUE_PREFIX}}-NNN
+${user_config.issue_tracker_url}/browse/${user_config.issue_prefix}-NNN
 ```
 
 ### `validate_id(id)`
 
 ```bash
-[[ "$id" =~ ^{{ISSUE_PREFIX}}-[0-9]+$ ]]
+[[ "$id" =~ ^${user_config.issue_prefix}-[0-9]+$ ]]
 ```
 
-## Búsqueda por JQL (opcional, para `/{{PROJECT_SLUG}} status` o similar)
+## Búsqueda por JQL (opcional, para `/ckp status` o similar)
 
 ```bash
 curl -s -u "$JIRA_AUTH" -X POST -H "Content-Type: application/json" \
   "$JIRA_BASE/rest/api/3/search/jql" \
-  -d '{"jql":"project = {{ISSUE_PREFIX}} AND status = \"In Progress\"","fields":["summary","status"]}' \
+  -d '{"jql":"project = ${user_config.issue_prefix} AND status = \"In Progress\"","fields":["summary","status"]}' \
   | jq '.issues[] | {key, summary: .fields.summary, status: .fields.status.name}'
 ```
 

@@ -1,22 +1,38 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# Hook: on-success.sh
-# Tras `/{{PROJECT_SLUG}} capture` exitoso, mergea las keywords nuevas en
-# index/keywords.json sin sobrescribir entradas existentes.
+# Hook: on-success.sh  (plugin: ckp)
+# Tras `/ckp capture` exitoso, mergea las keywords nuevas en
+# <KB>/index/keywords.json sin sobrescribir entradas existentes.
 #
 # INVOCACIÓN MANUAL: el SKILL.md instruye al modelo para invocarlo al final
 # de una captura aprobada:
 #
-#   bash .claude/hooks/on-success.sh capture
+#   bash "${CLAUDE_PLUGIN_ROOT}/hooks/on-success.sh" capture
 #
 # Solo actúa cuando $1 contiene "capture|learn|save".
+#
+# Estado mutable (captures.jsonl) vive en ${CLAUDE_PLUGIN_DATA}/learning/.
+# El índice keywords.json se escribe dentro del KB del proyecto.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -e
 
-LEARNING_DIR=".claude/learning"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+DATA_DIR="${CLAUDE_PLUGIN_DATA:-$PROJECT_DIR/.claude}"
+
+KB_SUB="${CLAUDE_PLUGIN_OPTION_KB_PATH:-}"
+if [[ -n "$KB_SUB" ]]; then
+    case "$KB_SUB" in
+        /*) KB_ROOT="$KB_SUB" ;;
+         *) KB_ROOT="$PROJECT_DIR/$KB_SUB" ;;
+    esac
+else
+    KB_ROOT="$PROJECT_DIR"
+fi
+
+LEARNING_DIR="$DATA_DIR/learning"
 CAPTURES_FILE="$LEARNING_DIR/captures.jsonl"
-KEYWORDS_INDEX="index/keywords.json"
+KEYWORDS_INDEX="$KB_ROOT/index/keywords.json"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 trigger="${1:-}"

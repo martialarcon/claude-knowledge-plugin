@@ -20,18 +20,18 @@ Si se prefiere curl: token en `~/secrets/github_token.txt` (PAT con scope `repo`
 ## Convenciones
 
 En GitHub Issues, los IDs son numéricos (`#123`), pero el plugin asume un
-**prefijo simbólico** (`{{ISSUE_PREFIX}}-NNN`). Dos opciones:
+**prefijo simbólico** (`${user_config.issue_prefix}-NNN`). Dos opciones:
 
-1. **Prefijo = nombre del repo o etiqueta**: `{{ISSUE_PREFIX}}-NNN` mapea a
+1. **Prefijo = nombre del repo o etiqueta**: `${user_config.issue_prefix}-NNN` mapea a
    `<owner>/<repo>#NNN`. Mantener el mapeo en este archivo.
 2. **Adoptar el número crudo**: cambiar el regex a `^#\d+$` y sustituir
-   `{{ISSUE_PREFIX}}` por `#` en todo el plugin.
+   `${user_config.issue_prefix}` por `#` en todo el plugin.
 
 > ⚠️ Decidir cuál antes de usar.
 
 ## Operaciones (recetas a verificar)
 
-### `resolve_issue({{ISSUE_PREFIX}}-NNN)`
+### `resolve_issue(${user_config.issue_prefix}-NNN)`
 
 ```bash
 OWNER="..."        # rellenar
@@ -39,7 +39,7 @@ REPO="..."         # rellenar
 NUMBER="${1#*-}"   # extrae el número del ID
 
 gh issue view "$NUMBER" --repo "$OWNER/$REPO" --json number,title,state,url \
-  | jq '{key: ("{{ISSUE_PREFIX}}-" + (.number|tostring)), summary: .title, status: .state, url}'
+  | jq '{key: ("${user_config.issue_prefix}-" + (.number|tostring)), summary: .title, status: .state, url}'
 ```
 
 ### `build_url(id)`
@@ -51,7 +51,7 @@ https://github.com/<owner>/<repo>/issues/NNN
 ### `validate_id(id)`
 
 ```bash
-[[ "$id" =~ ^{{ISSUE_PREFIX}}-[0-9]+$ ]]
+[[ "$id" =~ ^${user_config.issue_prefix}-[0-9]+$ ]]
 ```
 
 ## TODO al adoptar

@@ -1,0 +1,52 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -e '.tool_input.skill | test(\"knowledge-agent|planner\")' 2>/dev/null && bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-activate.sh\" || true",
+            "timeout": 60,
+            "statusMessage": "Actualizando repositorios..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -e '.tool_input.skill | test(\"knowledge-agent|planner\")' 2>/dev/null && bash \"${CLAUDE_PLUGIN_ROOT}/hooks/post-activate.sh\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/on-user-prompt.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/on-session-end.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

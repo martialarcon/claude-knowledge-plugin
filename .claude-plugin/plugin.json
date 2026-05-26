@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "ckp",
+  "displayName": "Knowledge Agent + Planner",
+  "version": "0.3.0",
+  "description": "Patrón Knowledge Agent (analista) + Planner (planificador) con handoff YAML auditable, knowledge base estructurado en capas L0–L7 y tracker de issues pluggable (Jira / Linear / GitHub).",
+  "author": "malarcon",
+  "license": "MIT",
+  "keywords": ["knowledge-base", "planner", "skills", "handoff", "jira"],
+  "userConfig": {
+    "kb_path": {
+      "type": "directory",
+      "title": "Knowledge Base path",
+      "description": "Directorio raíz del KB (capas L0–L7). Vacío = usar el directorio del proyecto.",
+      "required": false,
+      "default": ""
+    },
+    "issue_tracker": {
+      "type": "string",
+      "title": "Issue tracker",
+      "description": "Sistema de tickets: jira | linear | github | none",
+      "default": "none",
+      "required": false
+    },
+    "issue_prefix": {
+      "type": "string",
+      "title": "Prefijo de tickets",
+      "description": "Prefijo del ID (ej. ATP, PROJ). Se valida con regex ^[A-Z][A-Z0-9]+$.",
+      "default": "ISSUE",
+      "required": false
+    },
+    "issue_tracker_url": {
+      "type": "string",
+      "title": "URL del tracker",
+      "description": "Base URL del tracker, sin slash final (ej. https://miorg.atlassian.net).",
+      "default": "",
+      "required": false
+    }
+  }
+}

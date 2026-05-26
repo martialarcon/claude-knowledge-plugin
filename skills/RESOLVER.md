@@ -27,7 +27,7 @@ Léeme **antes** de activar cualquier skill de este plugin. Soy el dispatcher: d
 
 ## Reglas duras
 
-1. **Planner exige handoff.** Si el usuario pide `/planner {id}` sin `handoff/{id}.yaml`, **no activar planner**. Responder con la receta para generarlo desde KA.
+1. **Planner exige handoff.** Si el usuario pide `/ckp:planner {id}` sin `handoff/{id}.yaml`, **no activar planner**. Responder con la receta para generarlo desde KA.
 2. **KA exige ticket** para `analyze`, `handoff`, `impact`. Si falta, pedirlo antes de continuar; nunca inventarlo.
 3. **Ninguna skill implementa.** Ver bloque "Trust boundary" en cada `SKILL.md`.
 4. **Sesiones separadas.** KA y Planner se ejecutan idealmente en sesiones distintas para mantener limpio el contexto y el contrato auditable del handoff YAML. Si comparten sesión, el modelo debe cambiar de skill explícitamente, no continuar con la anterior.

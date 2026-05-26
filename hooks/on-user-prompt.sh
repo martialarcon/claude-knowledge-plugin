@@ -1,23 +1,25 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# Hook: on-user-prompt.sh
+# Hook: on-user-prompt.sh  (plugin: ckp)
 # Evento: UserPromptSubmit
-# 1) Mientras la sesión KA está activa, recuerda al modelo consultar KB primero.
-# 2) Hace keyword-routing contra index/keywords.json y emite los paths KB
+# 1) Mientras la sesión CKP está activa, recuerda al modelo consultar KB primero.
+# 2) Hace keyword-routing contra <KB>/index/keywords.json y emite los paths
 #    sugeridos como additionalContext.
 #
 # Activación:
-#   - Existe el flag .claude/.ka-session-active.
+#   - Existe el flag ${CLAUDE_PLUGIN_DATA}/.ckp-session-active
 #   - El prompt no empieza por '/' (los comandos ya re-activan la skill).
 #
-# Variables opcionales:
-#   KA_ROUTING_TOPN=N        (default 5) máximo de keywords devueltas
-#   KA_ROUTING_PATHS_PER=N   (default 6) máximo de paths por keyword
+# Overrides:
+#   CKP_ROUTING_TOPN=N        (default 5) máximo de keywords devueltas
+#   CKP_ROUTING_PATHS_PER=N   (default 6) máximo de paths por keyword
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -euo pipefail
 
-FLAG="${CLAUDE_PROJECT_DIR:-}/.claude/.ka-session-active"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+DATA_DIR="${CLAUDE_PLUGIN_DATA:-$PROJECT_DIR/.claude}"
+FLAG="$DATA_DIR/.ckp-session-active"
 [[ -f "$FLAG" ]] || exit 0
 
 payload=$(cat)
@@ -28,13 +30,22 @@ case "$prompt" in
   /*) exit 0 ;;
 esac
 
-KB_ROOT="${CLAUDE_PROJECT_DIR:-}"
+KB_SUB="${CLAUDE_PLUGIN_OPTION_KB_PATH:-}"
+if [[ -n "$KB_SUB" ]]; then
+    case "$KB_SUB" in
+        /*) KB_ROOT="$KB_SUB" ;;
+         *) KB_ROOT="$PROJECT_DIR/$KB_SUB" ;;
+    esac
+else
+    KB_ROOT="$PROJECT_DIR"
+fi
+
 KEYWORDS="$KB_ROOT/index/keywords.json"
-TOPN="${KA_ROUTING_TOPN:-5}"
-PATHS_PER="${KA_ROUTING_PATHS_PER:-6}"
+TOPN="${CKP_ROUTING_TOPN:-5}"
+PATHS_PER="${CKP_ROUTING_PATHS_PER:-6}"
 
 reminder=$(cat <<'EOF'
-[KA activo] Antes de leer código: identifica nivel KB (L0–L7) que cubre el sub-tema, relee la sección, y abre tu respuesta con `KB consultado: <ruta §sección>` (o `ninguna` + propuesta). Código sólo después, mínimo necesario.
+[CKP activo] Antes de leer código: identifica nivel KB (L0–L7) que cubre el sub-tema, relee la sección, y abre tu respuesta con `KB consultado: <ruta §sección>` (o `ninguna` + propuesta). Código sólo después, mínimo necesario.
 EOF
 )
 
