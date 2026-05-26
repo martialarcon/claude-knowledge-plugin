@@ -1,0 +1,11 @@
+# Repos compañeros que el hook `pre-activate.sh` mantiene actualizados vía `git pull --ff-only`.
+# Una entrada por línea, relativa a ${{REPOS_ROOT_ENV}} (default: directorio padre del KB).
+# Acepta globs.
+#
+# Override del root: export {{REPOS_ROOT_ENV}}=/ruta/a/git
+# Líneas vacías y las que empiezan por '#' se ignoran.
+#
+# Ejemplos:
+# mi-backend
+# mi-frontend
+# lambda-*

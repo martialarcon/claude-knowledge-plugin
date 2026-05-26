@@ -1,0 +1,57 @@
+id: PRJ-123
+status: pending_planning
+created: 2026-05-26T10:00:00Z
+created_by: knowledge-agent
+
+issue:
+  tracker: jira
+  id: PRJ-123
+  url: https://example.atlassian.net/browse/PRJ-123
+  title: "Validar CIF en el formulario de alta de proveedor"
+  label: "PRJ-123 Validar CIF en alta de proveedor"
+
+summary: |
+  El formulario de alta de proveedor acepta CIFs inválidos. Hay que validar
+  formato (letra de control) antes de enviar al backend y mostrar error inline.
+
+scope:
+  modules:
+    - name: frontend
+      repo: ~/git/mi-frontend
+      branch_hint: feature/PRJ-123-validar-cif
+      files:
+        - path: src/app/proveedor/alta/alta.component.ts
+          why: validación en submit
+          anchor: "método onSubmit, líneas ~80-120"
+          current_snippet: |
+            onSubmit() {
+              if (!this.form.valid) return;
+              this.api.crearProveedor(this.form.value).subscribe(...);
+            }
+        - path: src/app/proveedor/alta/alta.component.html
+          why: mensaje de error inline
+          anchor: "input #cif"
+  entities:
+    - Proveedor
+  flows:
+    - AltaProveedor
+
+functional_definitions:
+  - L7-functional/empresa/cif.md
+
+decisions_open: []
+
+warnings:
+  - El backend también valida pero devuelve 500 en lugar de 400 si el CIF es inválido. Bug paralelo PRJ-118.
+
+related:
+  issues:
+    - "PRJ-118": "Backend devuelve 500 en CIF inválido"
+  adrs: []
+
+verification_hints:
+  - "Form con CIF 'XYZ' no permite submit y muestra 'CIF inválido' bajo el input."
+  - "Form con CIF 'B12345678' permite submit y llama al endpoint."
+
+links:
+  analysis: analysis/2026-05-26-PRJ-123-validar-cif/README.md

@@ -1,0 +1,24 @@
+# Fuente de verdad de entornos. Editar al adoptar el plugin.
+#
+# Estructura sugerida:
+#
+# environments:
+#   dev:
+#     branches:
+#       backend: develop
+#       frontend: develop
+#     services:
+#       - name: <servicio>
+#         url: <url>
+#   uat:
+#     branches: {...}
+#   prod:
+#     branches: {...}
+#
+# warnings:
+#   - type: warning
+#     id: ENV-1
+#     summary: <cruce no obvio entre entornos>
+
+environments: {}
+warnings: []

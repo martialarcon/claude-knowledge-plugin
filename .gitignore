@@ -1,0 +1,5 @@
+.claude/.last-pull
+.claude/.ka-session-active
+.claude/learning/captures.jsonl
+*.local.json
+.DS_Store

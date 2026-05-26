@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "claude-knowledge-plugin",
+  "version": "0.1.0",
+  "description": "Plugin de Claude Code que aporta el patrón Knowledge Agent (analista) + Planner (planificador) con handoff YAML, knowledge base estructurado en capas L0–L7 y tracker de issues pluggable (Jira / Linear / GitHub).",
+  "author": "",
+  "license": "MIT",
+  "keywords": ["knowledge-base", "planner", "skills", "handoff", "jira"],
+  "engines": {
+    "claude-code": ">=1.0.0"
+  },
+  "scripts": {
+    "init": "scripts/init.sh",
+    "validate": "scripts/validate.sh"
+  }
+}
