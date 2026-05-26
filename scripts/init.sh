@@ -132,6 +132,11 @@ while IFS= read -r -d '' f; do substitute "$f"; done < <(
 
 chmod +x "$TARGET/.claude/hooks/"*.sh
 
+# Stamp de versión instalada (lo usa scripts/upgrade.sh)
+if [[ -f "$PLUGIN_ROOT/VERSION" ]]; then
+  cp "$PLUGIN_ROOT/VERSION" "$TARGET/.claude/.plugin-version"
+fi
+
 # ─── Stubs de trackers no usados (los borra para no confundir) ────────────────
 for t in jira linear github; do
   if [[ "$t" != "$ISSUE_TRACKER" ]]; then

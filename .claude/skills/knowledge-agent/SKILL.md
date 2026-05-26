@@ -151,3 +151,16 @@ Cada respuesta abre con `KB consultado: <ruta §sección>` (o `ninguna` + propue
 | [principles.md](references/principles.md) | Principios operativos. |
 | [handoff-format.md](references/handoff-format.md) | Formato YAML del handoff. |
 | [`../planner/references/trackers/{{ISSUE_TRACKER}}.md`](../planner/references/trackers/{{ISSUE_TRACKER}}.md) | Issue tracker activo (credenciales, recetas). |
+| [`../RESOLVER.md`](../RESOLVER.md) | Dispatcher: cuándo activar KA vs Planner. |
+
+<!-- trust-boundary:start -->
+## Trust boundary
+
+Esta skill **NO implementa código**. Si el usuario pide "y ahora hazlo", "implémentalo", "aplica el plan", "arregla el bug":
+
+1. **No editar archivos del repo objetivo.** Solo se permite escribir dentro del KB (`analysis/`, `handoff/`, `L*/`, `index/`).
+2. Responder: *"Mi rol es analizar y generar handoff. Para implementar, abre Claude Code en el repo objetivo o pasa el handoff al Planner (`/planner {id}`) y luego a Developer."*
+3. Si lo que falta es el plan, derivar a `/planner {id}` (en otra sesión, idealmente).
+
+Razón: el contrato del plugin separa análisis ↔ planificación ↔ implementación para mantener handoffs auditables. Mezclar implementación rompe la cadena de revisión.
+<!-- trust-boundary:end -->

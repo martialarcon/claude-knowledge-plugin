@@ -1,0 +1,75 @@
+# claude-knowledge-plugin
+
+> Plugin de Claude Code que instala el patrón Knowledge Agent (analista) + Planner (planificador) en un proyecto destino. KB markdown en capas L0–L7, handoff YAML como contrato entre ambas skills, tracker de issues pluggable (Jira / Linear / GitHub). El plugin no se ejecuta: se copia a `<target>/.claude/` vía `scripts/init.sh`.
+
+## Entry points
+
+- [README.md](README.md): visión general, comandos `init.sh` / `doctor.sh`, arquitectura.
+- [CLAUDE.md](CLAUDE.md): guía para Claude Code cuando trabaja sobre este repo (no sobre un target).
+- [INSTALL_FOR_AGENTS.md](INSTALL_FOR_AGENTS.md): guion de instalación paso a paso para agentes.
+- [VERSION](VERSION): versión actual del plugin (semver).
+
+## Configuración del plugin
+
+- [plugin.json](plugin.json): manifest del plugin (nombre, scripts, engines).
+- [.claude/settings.json](.claude/settings.json): hooks PreToolUse / PostToolUse / UserPromptSubmit / SessionEnd que se instalan en el target.
+- [.claude/skill-rules.json](.claude/skill-rules.json): auto-activación de skills por keywords.
+- [.claude/repos.list.template](.claude/repos.list.template): plantilla de repos compañeros.
+
+## Skills (lo que se instala)
+
+- [.claude/skills/RESOLVER.md](.claude/skills/RESOLVER.md): dispatcher. Léelo antes de activar una skill — decide entre `knowledge-agent` y `planner`.
+- [.claude/skills/knowledge-agent/SKILL.md](.claude/skills/knowledge-agent/SKILL.md): analista funcional + arquitecto. Genera análisis y handoffs. NO implementa.
+- [.claude/skills/knowledge-agent/references/domain.md](.claude/skills/knowledge-agent/references/domain.md): contexto específico del proyecto (lo edita el operador).
+- [.claude/skills/knowledge-agent/references/principles.md](.claude/skills/knowledge-agent/references/principles.md): principios operativos del KA.
+- [.claude/skills/knowledge-agent/references/handoff-format.md](.claude/skills/knowledge-agent/references/handoff-format.md): formato YAML del handoff (contrato KA → Planner).
+- [.claude/skills/planner/SKILL.md](.claude/skills/planner/SKILL.md): planificador. Consume handoff y genera `plans/{id}.md`. NO implementa.
+- [.claude/skills/planner/references/issue-tracker.md](.claude/skills/planner/references/issue-tracker.md): contrato genérico del tracker.
+- [.claude/skills/planner/references/trackers/jira.md](.claude/skills/planner/references/trackers/jira.md): receta Jira.
+- [.claude/skills/planner/references/trackers/linear.md](.claude/skills/planner/references/trackers/linear.md): stub Linear.
+- [.claude/skills/planner/references/trackers/github.md](.claude/skills/planner/references/trackers/github.md): stub GitHub.
+
+## Hooks
+
+- [.claude/hooks/pre-activate.sh](.claude/hooks/pre-activate.sh): `git pull --ff-only` sobre repos.list + inyecta contexto KB (TTL 30 min).
+- [.claude/hooks/post-activate.sh](.claude/hooks/post-activate.sh): cierra contabilidad de activación.
+- [.claude/hooks/on-user-prompt.sh](.claude/hooks/on-user-prompt.sh): keyword-routing contra `index/keywords.json`.
+- [.claude/hooks/on-success.sh](.claude/hooks/on-success.sh): persiste hallazgos al KB.
+- [.claude/hooks/on-session-end.sh](.claude/hooks/on-session-end.sh): limpia flag de sesión.
+
+## Scripts
+
+- [scripts/init.sh](scripts/init.sh): instalar el plugin en un target.
+- [scripts/doctor.sh](scripts/doctor.sh): health-check (`--json`, `--fix`).
+- [scripts/upgrade.sh](scripts/upgrade.sh): aplicar migraciones a un target existente.
+- [scripts/validate.sh](scripts/validate.sh): alias BC → `doctor.sh`.
+
+## Migraciones aguas abajo
+
+- [migrations/README.md](migrations/README.md): contrato de las migraciones.
+- [migrations/v0.2.0/upgrade.sh](migrations/v0.2.0/upgrade.sh): 0.1.0 → 0.2.0.
+- [migrations/v0.2.0/NOTES.md](migrations/v0.2.0/NOTES.md): qué cambia en 0.2.0.
+
+## KB skeleton (opcional, `--bootstrap-kb`)
+
+- [kb-skeleton/L0-system/environments.yaml](kb-skeleton/L0-system/environments.yaml): fuente de verdad de entornos/branches.
+- [kb-skeleton/L5-issues/INDEX-open.md](kb-skeleton/L5-issues/INDEX-open.md): índice de issues abiertos.
+- [kb-skeleton/index/keywords.json](kb-skeleton/index/keywords.json): routing por keywords (vacío inicial).
+
+## Ejemplos
+
+- [examples/sample-handoff.yaml](examples/sample-handoff.yaml): handoff de referencia.
+- [examples/sample-plan.md](examples/sample-plan.md): plan de referencia.
+
+## Flujo
+
+```
+SESIÓN 1 (Knowledge Agent)              SESIÓN 2 (Planner)
+/<slug> analyze + /<slug> handoff  →   /planner {id}
+              ↓                                  ↓
+   handoff/{id}.yaml                    plans/{id}.md
+```
+
+## Trust boundary
+
+Ninguna skill implementa código. El plugin separa **análisis ↔ planificación ↔ implementación** por sesiones distintas para mantener handoffs y planes auditables.

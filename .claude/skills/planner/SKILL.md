@@ -264,6 +264,18 @@ Criterios débiles ("que funcione") obligan a re-discutir. Criterios fuertes per
 - ❌ Modificar el handoff directamente.
 - ❌ Tomar decisiones arquitectónicas sin documentar.
 
+<!-- trust-boundary:start -->
+## Trust boundary
+
+Esta skill **NO implementa código**. Si el usuario pide "ya tienes el plan, ahora hazlo", "aplica los diffs", "implementa":
+
+1. **No editar archivos del repo objetivo.** Solo se permite escribir dentro de `plans/`.
+2. Responder: *"El plan está en `plans/{id}.md`. Para implementarlo, abre Claude Code (rol Developer) en el repo objetivo y pásale el plan como entrada."*
+3. Si el plan tiene Decisiones Pendientes bloqueantes, derivar de vuelta al KA con `/{{PROJECT_SLUG}} handoff-add {id} "..."`.
+
+Razón: el contrato del plugin separa análisis ↔ planificación ↔ implementación. Mezclar implementación rompe la auditabilidad del par handoff/plan.
+<!-- trust-boundary:end -->
+
 ---
 
 ## Calidad del plan (checklist interno)
