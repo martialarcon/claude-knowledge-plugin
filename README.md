@@ -19,10 +19,18 @@ Separarlos mantiene contextos pequeños (KB pesado vs código pesado), permite t
 
 ## Instalación
 
-Requiere Claude Code ≥ v2.1.143 (por el campo `displayName` del manifest).
+Requiere Claude Code ≥ v2.1.143.
 
 ```
-/plugin install https://github.com/martialarcon/claude-knowledge-plugin
+/plugin marketplace add martialarcon/claude-knowledge-plugin
+/plugin install ckp@ckp-marketplace
+```
+
+Para desarrollo desde un clon local:
+
+```
+/plugin marketplace add /ruta/a/claude-knowledge-plugin
+/plugin install ckp@ckp-marketplace
 ```
 
 Claude Code pedirá los valores de configuración (`userConfig`):
@@ -50,26 +58,28 @@ Tras `setup`:
 2. (Opcional) Añade repos compañeros en `<proyecto>/.claude/ckp-repos.list`.
 3. (Opcional) Configura `~/secrets/<tracker>_token.txt` si usas Jira.
 
-## Estructura del plugin
+## Estructura del repo
 
 ```
-.claude-plugin/plugin.json    → manifest (userConfig, metadata)
-hooks/
-  hooks.json                  → PreToolUse / PostToolUse / UserPromptSubmit / SessionEnd
-  pre-activate.sh             → pull de repos compañeros + inyecta estado KB (TTL 30 min)
-  post-activate.sh            → handoffs pendientes, flag de sesión activa
-  on-user-prompt.sh           → keyword-routing contra index/keywords.json
-  on-success.sh               → merge de keywords al KB tras /ckp capture
-  on-session-end.sh           → limpia flag de sesión
-skills/
-  knowledge-agent/SKILL.md    → analista/arquitecto
-  knowledge-agent/references/{principles,handoff-format,domain}.md
-  planner/SKILL.md            → planificador
-  planner/references/issue-tracker.md
-  planner/references/trackers/{jira,linear,github}.md
-  setup/SKILL.md              → bootstrap interactivo del KB
-  RESOLVER.md                 → dispatcher KA vs Planner
-kb-skeleton/                  → árbol L0…L7 vacío que /ckp:setup copia al KB
+.claude-plugin/marketplace.json   → catálogo del marketplace (1 plugin: ckp)
+plugins/ckp/
+  .claude-plugin/plugin.json      → manifest del plugin (userConfig, metadata)
+  hooks/
+    hooks.json                → PreToolUse / PostToolUse / UserPromptSubmit / SessionEnd
+    pre-activate.sh           → pull de repos compañeros + inyecta estado KB (TTL 30 min)
+    post-activate.sh          → handoffs pendientes, flag de sesión activa
+    on-user-prompt.sh         → keyword-routing contra index/keywords.json
+    on-success.sh             → merge de keywords al KB tras /ckp capture
+    on-session-end.sh         → limpia flag de sesión
+  skills/
+    knowledge-agent/SKILL.md  → analista/arquitecto
+    knowledge-agent/references/{principles,handoff-format,domain}.md
+    planner/SKILL.md          → planificador
+    planner/references/issue-tracker.md
+    planner/references/trackers/{jira,linear,github}.md
+    setup/SKILL.md            → bootstrap interactivo del KB
+    RESOLVER.md               → dispatcher KA vs Planner
+  kb-skeleton/                → árbol L0…L7 vacío que /ckp:setup copia al KB
 scripts/
   doctor.sh                   → health-check del plugin (manifest, hooks, skills)
   validate.sh                 → alias de doctor.sh

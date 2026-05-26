@@ -19,7 +19,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PLUGIN_ROOT="$REPO_ROOT/plugins/ckp"
 
 JSON=0
 FIX=0
@@ -39,6 +40,14 @@ record() { checks+=("$1|$2|$3"); }
 
 # ─── 1. manifest ──────────────────────────────────────────────────────────────
 MANIFEST="$PLUGIN_ROOT/.claude-plugin/plugin.json"
+MARKETPLACE="$REPO_ROOT/.claude-plugin/marketplace.json"
+if [[ ! -f "$MARKETPLACE" ]]; then
+  record fail marketplace "falta .claude-plugin/marketplace.json"
+elif ! jq empty "$MARKETPLACE" >/dev/null 2>&1; then
+  record fail marketplace "JSON inválido en marketplace.json"
+else
+  record ok marketplace "marketplace.json válido"
+fi
 if [[ ! -f "$MANIFEST" ]]; then
   record fail manifest "falta .claude-plugin/plugin.json"
 elif ! jq empty "$MANIFEST" >/dev/null 2>&1; then

@@ -23,23 +23,25 @@ scripts/doctor.sh --fix     # repara permisos de hooks
 - Stubs de trackers (`jira`, `linear`, `github`) presentes.
 - `kb-skeleton/` completo (L0–L7 + analysis/handoff/plans/index).
 
-## Arquitectura del plugin
+## Estructura del repo
 
 ```
-.claude-plugin/plugin.json    → manifest + userConfig
-hooks/
-  hooks.json                  → PreToolUse / PostToolUse / UserPromptSubmit / SessionEnd
-  pre-activate.sh             → pull repos compañeros + estado KB (TTL 30 min)
-  post-activate.sh            → handoffs pendientes + flag sesión activa
-  on-user-prompt.sh           → keyword-routing contra <KB>/index/keywords.json
-  on-success.sh               → merge keywords al KB tras /ckp capture
-  on-session-end.sh           → limpia flag de sesión
-skills/
-  knowledge-agent/SKILL.md    → analista (NO implementa)
-  planner/SKILL.md            → planificador (NO implementa)
-  setup/SKILL.md              → bootstrap interactivo del KB
-  RESOLVER.md                 → dispatcher KA vs Planner
-kb-skeleton/                  → L0–L7 vacío, copiado por /ckp:setup
+.claude-plugin/marketplace.json   → catálogo (apunta a plugins/ckp)
+plugins/ckp/
+  .claude-plugin/plugin.json      → manifest del plugin + userConfig
+  hooks/
+    hooks.json                → PreToolUse / PostToolUse / UserPromptSubmit / SessionEnd
+    pre-activate.sh           → pull repos compañeros + estado KB (TTL 30 min)
+    post-activate.sh          → handoffs pendientes + flag sesión activa
+    on-user-prompt.sh         → keyword-routing contra <KB>/index/keywords.json
+    on-success.sh             → merge keywords al KB tras /ckp capture
+    on-session-end.sh         → limpia flag de sesión
+  skills/
+    knowledge-agent/SKILL.md  → analista (NO implementa)
+    planner/SKILL.md          → planificador (NO implementa)
+    setup/SKILL.md            → bootstrap interactivo del KB
+    RESOLVER.md               → dispatcher KA vs Planner
+  kb-skeleton/                → L0–L7 vacío, copiado por /ckp:setup
 scripts/{doctor,validate}.sh
 ```
 

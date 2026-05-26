@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "ckp",
-      "source": "."
+      "source": "./plugins/ckp"
     }
   ]
 }
