@@ -1,0 +1,146 @@
+id: COPILOT-001
+status: pending_planning
+created: 2026-05-27T00:00:00Z
+created_by: knowledge-agent
+
+issue:
+  tracker: github
+  id: COPILOT-001
+  url: https://github.com/martialarcon/claude-knowledge-plugin
+  title: "Exportar sistema Knowledge Agent + Planner para GitHub Copilot (VS Code) — adaptación full"
+  label: "COPILOT-001 Copilot full export"
+
+summary: |
+  El plugin actualmente depende 100% de la infraestructura de Claude Code
+  (skills, hooks, skill-rules). Se quiere una adaptación "full" para GitHub
+  Copilot en VS Code que preserve el workflow KA → Planner → Developer
+  usando mecanismos nativos de Copilot: instruction files, VS Code Tasks y
+  prompt templates. El KB (L0–L7), handoff YAML y plans se conservan sin cambios.
+
+scope:
+  modules:
+    - name: plugin-root
+      repo: ~/git/claude-knowledge-plugin
+      branch_hint: claude/workflow-copilot-export-rAuoz
+      files:
+        - path: plugin.json
+          why: añadir sección copilot al manifest
+          anchor: "objeto scripts"
+        - path: scripts/init.sh
+          why: referencia para crear init-copilot.sh con misma estructura
+          anchor: "flags --target --slug --tracker"
+
+    - name: copilot-skeleton (NUEVO)
+      repo: ~/git/claude-knowledge-plugin
+      branch_hint: claude/workflow-copilot-export-rAuoz
+      files:
+        - path: copilot-skeleton/.github/copilot-instructions.md
+          why: >
+            Instrucción always-on: dispatcher (RESOLVER), contexto de dominio
+            y guía de activación manual de skills. Equivalente a RESOLVER.md
+            + domain.md fusionados.
+        - path: copilot-skeleton/.vscode/instructions/knowledge-agent.instructions.md
+          why: >
+            Instruction file scoped (applyTo: "**") con el contenido de
+            SKILL.md del Knowledge Agent adaptado. Se activa cuando el usuario
+            lo referencia en el chat con #knowledge-agent.
+        - path: copilot-skeleton/.vscode/instructions/planner.instructions.md
+          why: >
+            Instruction file del Planner. Igual que el anterior pero para el rol
+            de planificación. Scoped a handoff/ y plans/.
+        - path: copilot-skeleton/.vscode/tasks.json
+          why: >
+            4 tareas que reemplazan los hooks bash:
+            pre-activate (git pull repos), check-handoffs (avisos pendientes),
+            capture-session (on-success.sh), clean-session (on-session-end.sh).
+        - path: copilot-skeleton/.github/prompts/ka-analyze.prompt.md
+          why: >
+            Prompt template para /analyze en GitHub.com Copilot. El usuario
+            lo invoca como shortcut desde la UI de Copilot Chat.
+        - path: copilot-skeleton/.github/prompts/planner-run.prompt.md
+          why: Prompt template para /planner en GitHub.com Copilot.
+        - path: copilot-skeleton/.copilot/activation-guide.md
+          why: >
+            Traduce skill-rules.json a guía legible: qué keywords activan cada
+            skill, cómo incluir contexto manualmente (#file:L0-system/...).
+
+    - name: scripts (NUEVO)
+      repo: ~/git/claude-knowledge-plugin
+      branch_hint: claude/workflow-copilot-export-rAuoz
+      files:
+        - path: scripts/init-copilot.sh
+          why: >
+            Equivalente a init.sh pero genera artefactos Copilot en el target.
+            Flags: --target, --name, --slug, --kb-path, --tracker, --issue-prefix,
+            --tracker-url. Copia copilot-skeleton/ sustituyendo placeholders.
+            Compatible con --bootstrap-kb de init.sh.
+
+  entities:
+    - Plugin
+    - Skill
+    - Hook
+    - KnowledgeBase
+
+  flows:
+    - KA→Planner→Developer (workflow core — se preserva)
+    - init.sh bootstrap (se extiende con init-copilot.sh)
+
+functional_definitions: []
+
+decisions_open:
+  - id: D1
+    question: >
+      ¿Los instruction files de VS Code (.vscode/instructions/) usan applyTo
+      global ("**") o scoped (e.g. "handoff/**" para planner)?
+    options:
+      - applyTo global para ambos (más simple, menos preciso)
+      - applyTo scoped por directorio (más correcto, requiere que el usuario
+        abra archivos relevantes para activar la instrucción)
+    recommendation: >
+      applyTo global con activación explícita vía #file reference.
+      El usuario menciona #knowledge-agent.instructions.md o
+      #planner.instructions.md para cambiar de "rol" en el chat.
+      Más predecible que el scoping por glob.
+
+  - id: D2
+    question: >
+      ¿El init-copilot.sh debe ser idempotente/coexistir con init.sh
+      (instalación dual Claude Code + Copilot) o ser exclusivo?
+    options:
+      - Coexistencia total — mismo target puede tener .claude/ y .vscode/
+        al mismo tiempo
+      - Exclusivo — flag --mode copilot|claude en init.sh unificado
+    recommendation: >
+      Coexistencia total. Son directorios separados (.claude/ vs .vscode/
+      + .github/). No hay conflicto. Un equipo puede usar ambos.
+
+warnings:
+  - >
+    VS Code instructions (.vscode/instructions/) requieren VS Code ≥1.96 y
+    GitHub Copilot extension habilitada. Versiones anteriores ignoran estos
+    archivos silenciosamente.
+  - >
+    GitHub Copilot NO ejecuta código antes/después de cada prompt. Los hooks
+    de keyword-routing (on-user-prompt.sh) no tienen equivalente automático.
+    El usuario debe incluir contexto manualmente via #file references.
+  - >
+    .github/prompts/ funciona en github.com/copilot pero NO en VS Code Chat.
+    Son superficies distintas. El init-copilot.sh debe generar ambas.
+  - >
+    La auto-activación por score (skill-rules.json) se pierde completamente.
+    La guía .copilot/activation-guide.md educa al usuario pero no la reemplaza.
+
+related:
+  issues: []
+  adrs: []
+
+verification_hints:
+  - "init-copilot.sh --target ~/test-repo --name test --slug ka ejecuta sin errores"
+  - "El target generado tiene .github/copilot-instructions.md con placeholders sustituidos"
+  - "El target generado tiene .vscode/instructions/knowledge-agent.instructions.md"
+  - "VS Code Tasks 'Pre-activate KB' y 'Check pending handoffs' aparecen en paleta de tareas"
+  - "El workflow KA→Planner funciona en Copilot Chat: usuario pega handoff YAML y Planner genera plan"
+  - "KB L0–L7 y handoff/ y plans/ son idénticos a la versión Claude Code (sin cambios)"
+
+links:
+  analysis: "análisis en conversación — sin archivo KB (repo es el plugin mismo)"
